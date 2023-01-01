@@ -14,3 +14,9 @@ local var = {
 print("Adios mundo " .. var.value)
 ```
 
+Now with other languages
+
+```python
+for i in range(10):
+    print(f'value: {i * 2}')
+```

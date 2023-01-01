@@ -33,7 +33,7 @@ local function execute(snippet)
     end
     tmp_file:close()
     -- Run user-specified command for language type
-    vim.api.nvim_command('!' .. string.format(M.langs[snippet.lang].command, TMP_FILENAME))
+    vim.api.nvim_command('!printf "\\n" && ' .. string.format(M.langs[snippet.lang].command, TMP_FILENAME))
 end
 
 function M.run_under_line()
