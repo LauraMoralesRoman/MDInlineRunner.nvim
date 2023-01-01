@@ -20,3 +20,14 @@ Now with other languages
 for i in range(10):
     print(f'value: {i * 2}')
 ```
+
+```js
+console.log("Hola mundo")
+```
+
+```cpp
+#include <iostream>
+int main() {
+    std::cout << "Hola mundo\n";
+}
+```

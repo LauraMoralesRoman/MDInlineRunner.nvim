@@ -2,6 +2,7 @@ local M = {}
 
 local parser = require"MDInlineRunner.parser"
 local window = require"MDInlineRunner.window"
+local keys = require"MDInlineRunner.key_commands"
 
 -- Default configuration
 M.langs = {}
@@ -73,14 +74,21 @@ function M.get()
         return cnt
     end
 
-    local highlight_positions = {}
+    local highlight_positions = {
+        snippet_start = {},
+        continuation = {}
+    }
+
+    insert('Snippets found in buffer')
+    insert('------------------------')
     for _, snippet in ipairs(filtered) do
-        local start = insert(string.format("%s\t%d:%d", M.langs[snippet.lang].icon, snippet.start.y - 1, snippet.stop.y - 1))
-        table.insert(highlight_positions, start - 1)
+        local start = insert(string.format("%s %s", M.langs[snippet.lang].icon, snippet.lang))
+        table.insert(highlight_positions.snippet_start, start - 1)
         
         for i, line in ipairs(snippet.content) do
             if i == MAX_LINES_PRINTED + 1 then 
-                insert('...')
+                local pos = insert('\t{...}')
+                table.insert(highlight_positions.continuation, pos - 1)
                 break
             end
             insert(line)
@@ -105,18 +113,32 @@ function M.get()
                 break
             end
         end
-    
     end, {buffer = buffer, silent=true})
+    keys.set_nav(buffer, bounds)
 
     vim.api.nvim_buf_set_lines(buffer, 0, 0, false, lines)
-    -- Add highlight
+    -- Add highlights
+        -- Set all to dark
     for i=0,#lines-1,1 do
         vim.api.nvim_buf_add_highlight(buffer, -1, "NonText", i, 0, -1)
     end
-    for _, position in ipairs(highlight_positions) do
+        -- Add highlight to title
+    vim.api.nvim_buf_add_highlight(buffer, -1, "Question", 0, 0, -1)
+        -- Set all snippet titles
+    for _, position in ipairs(highlight_positions.snippet_start) do
         vim.api.nvim_buf_add_highlight(buffer, -1, "Identifier", position, 3, -1)
         vim.api.nvim_buf_add_highlight(buffer, -1, "Statement", position, 0, 3)
     end
+        -- Set all ... instances
+    for _, position in ipairs(highlight_positions.continuation) do
+        vim.api.nvim_buf_add_highlight(buffer, -1, "Title", position, 0, -1)
+    end
+
+    -- Stop modifications
+    vim.api.nvim_buf_set_option(buffer, 'modifiable', false)
+    
+    -- Reset cursor position
+    vim.api.nvim_win_set_cursor(vim.api.nvim_get_current_win(), {1, 0})
 end
 
 return M
